@@ -199,6 +199,9 @@
                      (sequence->exp (cond-actions first))
                      (expand-clauses rest))))))
 
+
+  
+
 ;;;SECTION 4.1.3
 
 (define (true? x)
@@ -284,6 +287,8 @@
     (scan (frame-variables frame)
           (frame-values frame))))
 
+
+
 ;;;SECTION 4.1.4
 
 (define (setup-environment)
@@ -293,6 +298,7 @@
                              the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
+    (eval-definition '(define (and x y) (if x (if y true false) false)) initial-env)
     initial-env))
 
 (define (primitive-procedure? proc)
@@ -315,6 +321,7 @@
         (list '>= >=)
         (list '> >)
         (list 'error (lambda () (error "Metacircular Interpreter Aborted")))
+        
 ;;      more primitives
         ))
 
@@ -370,3 +377,4 @@
 (provide mceval
          setup-environment
          main)
+      
