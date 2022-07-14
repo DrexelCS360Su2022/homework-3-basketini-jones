@@ -30,6 +30,7 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (mceval (cond->if exp) env))
+        ((and? exp) (mceval (eval-and exp) env))
         ((application? exp)
          (mcapply (mceval (operator exp) env)
                   (list-of-values (operands exp) env)))
@@ -199,6 +200,23 @@
                      (sequence->exp (cond-actions first))
                      (expand-clauses rest))))))
 
+(define (and? exp) (tagged-list? exp 'and))
+
+(define (eval-and exp)
+  (run-and (rest-exps exp)) 
+)
+
+(define (run-and exp)
+  (if (null? exp)
+      true
+      (if (eval (first-exp exp))
+          (if (last-exp? exp)
+              (first-exp exp)
+              (run-and (rest-exps exp)))
+          #f
+       )
+  )
+)
 
   
 
@@ -298,7 +316,6 @@
                              the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
-    (eval-definition '(define (and x y) (if x (if y true false) false)) initial-env)
     initial-env))
 
 (define (primitive-procedure? proc)
