@@ -33,11 +33,13 @@
         ((and? exp) (mceval (eval-and exp env) env))
         ((or? exp) (mceval (eval-or exp env) env))
         ((let? exp) (mceval (eval-let exp env) env))
+        ((delay? exp) (mceval (eval-delay exp env) env))
+        ((force? exp) (mceval (eval-force exp env) env))
         ((application? exp)
          (mcapply (mceval (operator exp) env)
                   (list-of-values (operands exp) env)))
         (else
-         (error "Unknown expression type -- EVAL" exp))))
+         (top-mceval '((delay 3)))(error "Unknown expression type -- EVAL" exp))))
 
 (define (mcapply procedure arguments)
   (cond ((primitive-procedure? procedure)
@@ -272,6 +274,25 @@
    )
 )
 
+(define (delay? exp)
+  (tagged-list? exp 'delay)
+)
+
+(define (eval-delay exp env)
+  (delay->lambda exp)
+)
+
+(define (delay->lambda exp)
+  (make-lambda '() (rest-exps exp))
+)
+
+(define (force? exp)
+  (tagged-list? exp 'force)
+)
+
+(define (eval-force exp env)
+  (mceval (rest-exps exp) env)
+)
   
 
 ;;;SECTION 4.1.3
