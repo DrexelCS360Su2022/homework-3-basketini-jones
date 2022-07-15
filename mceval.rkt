@@ -32,6 +32,7 @@
         ((cond? exp) (mceval (cond->if exp) env))
         ((and? exp) (mceval (eval-and exp env) env))
         ((or? exp) (mceval (eval-or exp env) env))
+        ((let? exp) (mceval (eval-let exp env) env))
         ((application? exp)
          (mcapply (mceval (operator exp) env)
                   (list-of-values (operands exp) env)))
@@ -235,6 +236,40 @@
               (run-or (rest-exps exp) env))
        )
   )
+)
+
+(define (let? exp)
+  (tagged-list? exp 'let)
+)
+
+(define (let-bindings exp)
+  (cadr exp))
+
+(define (let-vars exp)
+  (map car (let-bindings exp)))
+
+(define (let-vals exp)
+  (map cadr (let-bindings exp)))
+
+(define (eval-vals exp env)
+  (if (null? exp)
+      '()
+      (cons (mceval (first-exp exp) env) (eval-vals (rest-exps exp) env))
+   )
+ )
+
+(define (let-body exp)
+  (cddr exp))
+
+(define (eval-let exp env)
+  (let-evaluate-body (let-body exp) (extend-environment (let-vars exp) (eval-vals (let-vals exp) env) env))
+)
+
+(define (let-evaluate-body exp env)
+  (if (last-exp? exp)
+      (mceval (first-exp exp) env)
+      (begin (mceval (first-exp exp) env) (let-evaluate-body (rest-exps exp) env))
+   )
 )
 
   
